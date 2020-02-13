@@ -1,5 +1,5 @@
-import React, { useReducer } from 'react'
-// import logo from './logo.svg'
+import React, { useReducer, useContext } from 'react'
+import logo from './logo.svg'
 import './App.css'
 
 function appReducer(state, action) {
@@ -14,24 +14,70 @@ function appReducer(state, action) {
         }
       ]
     }
-    default:
-      break;
+    case 'delete': {
+      // Seperate out each item from the id equalling the payload
+      return state.filter(item => item.id !== action.payload)
+    } 
+    default: {
+      return state
+    }
   }
 }
 
-function App() {
+
+const Context = React.createContext()
+
+
+export default function App() {
   const [state, dispatch] = useReducer(appReducer, [])
   return (
-    <div className="App">
-      <h1>Todos App</h1>
-      <button onClick={() => dispatch({ type: 'add'})}>
-        New Todo
-      </button>
-      {state.map(item => (
-        <div key={item.id}>{item.id}</div>
-      ))}
-    </div>
+    <Context.Provider value={dispatch}>
+      <div className="App">
+        <header>
+          <img className="App-logo" src={logo} alt="React_logo"></img>
+          <h1>Todos App</h1>
+          <button onClick={() => dispatch({ type: 'add'})}>
+            New Todo
+          </button>
+        </header>
+        <br />
+        <TodoList items={state} />
+      </div>
+    </Context.Provider>  
   )
 }
 
-export default App
+
+function TodoList({ items }) {
+  console.log(items)
+  return items.map(
+    item => <TodoItem key={item.id} {...item.id} />
+  )
+}
+
+
+function TodoItem({ id, completed, text }) {
+  const dispatch = useContext(Context)
+  console.log(dispatch)
+  return (
+    <div
+      style={{
+        width: '400px',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        margin: 'auto',
+        background: '#61dafb',
+        border: 'none',
+        padding: '15px',
+      }}
+    >
+    <input type="checkbox" checked={completed} />
+      <input type="text" defaultValue={text} style={{width: "200px"}} />
+      <button onClick={
+        () => dispatch({ type: "delete", payload: id})}>
+        Delete
+      </button>
+    </div>
+  )
+}
